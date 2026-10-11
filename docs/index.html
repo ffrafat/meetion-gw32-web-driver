@@ -1387,10 +1387,16 @@ function applyTheme() {
   $("mouseImg").alt = `Meetion GW32 tri-mode wireless gaming mouse in ${dark ? "black" : "white"}, showing left, right, wheel, DPI, side buttons and thumb wheel`;
   document.querySelector('meta[name="theme-color"]').content = dark ? "#0b0b0a" : "#f6f5f1";
 }
+// Follows the system theme by default; the toggle stores an override only while it differs from the system.
 $("themeBtn").onclick = () => {
-  const next = isDark() ? "light" : "dark";
-  document.documentElement.dataset.theme = next;
-  try { localStorage.setItem("gw32-theme", next); } catch {}
+  const next = isDark() ? "light" : "dark", system = darkMQ.matches ? "dark" : "light";
+  if (next === system) {
+    delete document.documentElement.dataset.theme;
+    try { localStorage.removeItem("gw32-theme"); } catch {}
+  } else {
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("gw32-theme", next); } catch {}
+  }
   applyTheme();
 };
 darkMQ.addEventListener("change", applyTheme);
