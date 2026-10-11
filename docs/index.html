@@ -263,11 +263,11 @@
   input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
   input[type=color]::-webkit-color-swatch { border: 0; border-radius: 50%; }
 
-  .fx { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .fx button { font: inherit; font-size: 12.5px; font-weight: 600; color: var(--text); text-align: left; cursor: pointer;
-               padding: 8px; border-radius: 11px; border: 1px solid var(--line); background: var(--well); }
-  .fx button i { display: block; height: 22px; border-radius: 6px; margin-bottom: 6px; }
-  .fx button.on { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .fx { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .fx button { font: inherit; font-size: 13px; font-weight: 600; color: var(--muted); text-align: center; cursor: pointer; white-space: nowrap;
+               overflow: hidden; text-overflow: ellipsis; padding: 8px 6px; border-radius: 9px; border: 1px solid var(--line); background: var(--well); }
+  .fx button:hover { color: var(--text); border-color: var(--line-2); }
+  .fx button.on { color: var(--text); border-color: var(--accent); background: var(--accent-soft); }
   .slider { display: grid; grid-template-columns: 92px 1fr 44px; gap: 12px; align-items: center; padding: 6px 0; font-size: 13.5px; color: var(--muted); }
   .slider output { font-family: var(--mono); font-size: 13px; color: var(--text); text-align: right; }
   .slider.dim { opacity: .4; }
@@ -834,14 +834,8 @@ const IMG_BOX = { x: 216, y: 11, w: 508, h: 778 };
 const toBox = (x, y) => [IMG_BOX.x + x * IMG_BOX.w / IMG.w, IMG_BOX.y + y * IMG_BOX.h / IMG.h];
 const HIDDEN_SLOTS = { 16: "scroll_up", 17: "scroll_down" };
 
-const LIGHT_MODES = [
-  ["LED off", "#1b1b1a"], ["Static", "var(--c)"], ["Breathing", "linear-gradient(90deg,#0000,var(--c),#0000)"],
-  ["Neon", "linear-gradient(90deg,#ff2bd6,#00e5ff,#ff2bd6)"], ["Color breathing", "linear-gradient(90deg,#f00,#0000,#0f0,#0000,#00f)"],
-  ["Color static", "linear-gradient(90deg,#f00 33%,#0f0 33% 66%,#00f 66%)"], ["Mixed breathing", "linear-gradient(90deg,#ff6a1a,#0000,#7a5cff)"],
-  ["Rainbow wave", "linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f)"], ["Lightning", "linear-gradient(100deg,#0000 40%,#fff 48%,#0000 56%),#223"],
-  ["Static mixed", "linear-gradient(90deg,#ff6a1a,#ffd23a,#3ddc84)"], ["Marquee", "repeating-linear-gradient(90deg,var(--c) 0 8px,#0000 8px 16px)"],
-  ["Marquee 2", "repeating-linear-gradient(90deg,#f00 0 8px,#0f0 8px 16px,#00f 16px 24px)"],
-];
+const LIGHT_MODES = ["LED off", "Static", "Breathing", "Neon", "Color breathing", "Color static", "Mixed breathing",
+  "Rainbow wave", "Lightning", "Static mixed", "Marquee", "Marquee 2"];
 const COLORS = ["#ff0000", "#ff6a00", "#ffd000", "#00ff40", "#00e5ff", "#0000ff", "#8a2bff", "#ff2bd6", "#ffffff"];
 const RATES = { 125: 8, 250: 4, 500: 2, 1000: 1 };
 const DPI_COLORS = ["#ff0000", "#ffff00", "#0000ff", "#00ff00", "#00ffff", "#ff0000", "#ff4000", "#ffffff"];
@@ -1080,9 +1074,8 @@ function renderDpi() {
 function renderLighting() {
   const l = cfg.lighting;
   const grid = $("fxGrid"); grid.textContent = "";
-  grid.style.setProperty("--c", l.color);
-  LIGHT_MODES.forEach(([n, bg], i) => {
-    const b = el("button", { className: i === l.mode ? "on" : "", type: "button" }, el("i", { style: `background:${bg}` }), n);
+  LIGHT_MODES.forEach((n, i) => {
+    const b = el("button", { className: i === l.mode ? "on" : "", type: "button", "aria-pressed": i === l.mode }, n);
     b.onclick = () => { l.mode = i; changed(); renderLighting(); };
     grid.append(b);
   });
@@ -1095,7 +1088,7 @@ function renderLighting() {
   COLORS.forEach(c => { const b = el("button", { className: c === l.color ? "on" : "", title: c, type: "button" }); b.style.background = c;
     b.onclick = () => { l.color = c; changed(); renderLighting(); }; sw.append(b); });
   const pick = el("input", { type: "color", value: l.color, title: "Custom color" });
-  pick.oninput = () => { l.color = pick.value; grid.style.setProperty("--c", l.color); changed(); };
+  pick.oninput = () => { l.color = pick.value; changed(); };
   pick.onchange = renderLighting;
   sw.append(pick);
 }
