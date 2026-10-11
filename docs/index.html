@@ -1443,11 +1443,14 @@ async function loadStats() {
       return j && j.count ? j.count : null;
     } catch { return null; }
   };
-  const [visits, applies] = await Promise.all([get("/meetion-gw32-web-driver/"), get("apply")]);
-  if (!visits) return;
+  // Page views of the configurator; falls back to the site total while the per-page count isn't available
+  // (GoatCounter caches counter responses for up to 4 hours).
+  const [page, total, applies] = await Promise.all([get("/meetion-gw32-web-driver/"), get("TOTAL"), get("apply")]);
+  const visits = page || total;
+  if (!visits || visits === "0") return;
   const out = $("statText"); out.textContent = "";
-  out.append(el("b", { textContent: String(visits) }), " visits");
-  if (applies) out.append(" · ", el("b", { textContent: String(applies) }), " times settings applied");
+  out.append(el("b", { textContent: String(visits) }), visits === "1" ? " visit" : " visits");
+  if (applies && applies !== "0") out.append(" · settings applied ", el("b", { textContent: String(applies) }), applies === "1" ? " time" : " times");
   $("siteStats").hidden = false;
 }
 init();
