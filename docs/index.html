@@ -416,6 +416,10 @@
   .person b { display: block; font-size: 15px; }
   .person small { color: var(--muted); font-size: 12.5px; }
   .fcreator p { margin-top: 14px; }
+  .contact { display: inline-flex; align-items: center; gap: 8px; color: var(--text); font-size: 14px; padding: 7px 12px;
+             border-radius: 10px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; }
+  .contact:hover { border-color: var(--accent); text-decoration: none; }
+  .contact svg { color: var(--accent); flex: none; }
   .fstats { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 40px 0 0; color: var(--muted); font-size: 13.5px; }
   .fstats[hidden] { display: none; }
   .fstats b { color: var(--text); font-variant-numeric: tabular-nums; }
@@ -702,6 +706,10 @@ sudo udevadm control --reload-rules</pre>
           <span><b>Faisal F Rafat</b><small>@ffrafat on GitHub</small></span>
         </a>
         <p>Reverse-engineered the GW32 protocol and built this tool so every GW32 owner can customize their mouse, on any computer.</p>
+        <a class="contact" id="contact" data-u="ff" data-d="cc.tafar" rel="nofollow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          <span id="contactText">ff [at] rafat [dot] cc</span>
+        </a>
       </div>
     </div>
     <p class="fstats" id="siteStats" hidden>
@@ -1432,6 +1440,18 @@ function init() {
   layoutStage();
   renderAll();
   loadStats();
+  initContact();
+}
+// Contact address is assembled at runtime so it never appears in the page source (keeps simple scrapers away).
+function initContact() {
+  const a = $("contact"); if (!a) return;
+  const addr = () => a.dataset.u + String.fromCharCode(64) + a.dataset.d.split("").reverse().join("");
+  $("contactText").textContent = addr();
+  a.setAttribute("aria-label", "Email the creator");
+  const arm = () => { if (!a.href) a.href = "mai" + "lto:" + addr() + "?subject=" + encodeURIComponent("Meetion GW32 Web Driver"); };
+  ["pointerenter", "focus", "touchstart"].forEach(ev => a.addEventListener(ev, arm, { once: true, passive: true }));
+  a.addEventListener("click", arm);
+  a.tabIndex = 0;
 }
 // Public counts from GoatCounter's visitor-counter endpoint; hidden if unavailable.
 async function loadStats() {
