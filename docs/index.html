@@ -426,8 +426,12 @@
       </div>
       <div class="stage" id="stage">
         <div class="glow" id="glow"></div>
-        <img id="mouseImg" src="assets/meetion-gw32-white.webp" width="783" height="1200"
-             alt="Meetion GW32 tri-mode wireless gaming mouse in white, showing left, right, wheel, DPI, side buttons and thumb wheel">
+        <picture>
+          <source id="darkSrc" srcset="assets/meetion-gw32-black.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+          <img id="mouseImg" src="assets/meetion-gw32-white.webp" width="783" height="1200" fetchpriority="high"
+               alt="Meetion GW32 tri-mode wireless gaming mouse showing left, right, wheel, DPI, side buttons and thumb wheel">
+        </picture>
+        <script>(function () { var t = document.documentElement.dataset.theme; if (t) document.getElementById("darkSrc").media = t === "dark" ? "all" : "not all"; })();</script>
         <svg id="overlay" role="group" aria-label="Button hotspots"></svg>
       </div>
       <div class="summary">
@@ -1101,7 +1105,8 @@ const isDark = () => (document.documentElement.dataset.theme || (darkMQ.matches 
 function applyTheme() {
   const dark = isDark();
   document.documentElement.classList.toggle("is-dark", dark);
-  $("mouseImg").src = `assets/meetion-gw32-${dark ? "black" : "white"}.webp`;
+  const media = document.documentElement.dataset.theme ? (dark ? "all" : "not all") : "(prefers-color-scheme: dark)";
+  if ($("darkSrc").media !== media) $("darkSrc").media = media;
   $("mouseImg").alt = `Meetion GW32 tri-mode wireless gaming mouse in ${dark ? "black" : "white"}, showing left, right, wheel, DPI, side buttons and thumb wheel`;
   document.querySelector('meta[name="theme-color"]').content = dark ? "#0b0b0a" : "#f6f5f1";
 }
