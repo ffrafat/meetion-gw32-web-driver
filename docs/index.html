@@ -206,10 +206,6 @@
   .stage.compact .callout, .stage.compact .lead-line, .stage.compact .anchor { display: none; }
   .stage.compact .spot circle.core { r: 17; }
   .stage.compact .spot text { font-size: 17px; }
-  .summary { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
-  .summary div { padding: 10px 12px; border-radius: 12px; background: var(--well); border: 1px solid var(--line); }
-  .summary small { display: block; font-size: 12px; color: var(--faint); }
-  .summary b { font-size: 15px; }
 
   .panel { padding: 0; overflow: hidden; }
   .tabs { display: flex; border-bottom: 1px solid var(--line); background: var(--well); }
@@ -395,8 +391,6 @@
     .brow > :last-child { grid-column: 1 / -1; }
     .dpirow { grid-template-columns: 60px 1fr 70px 28px; gap: 8px; }
     .fx { grid-template-columns: repeat(2, 1fr); }
-    .summary { grid-template-columns: 1fr 1fr 1fr; }
-    .summary b { font-size: 13px; }
   }
   dialog.modal { width: min(420px, calc(100% - 32px)); padding: 26px; border-radius: 20px; border: 1px solid var(--line-2);
                  background: var(--panel-solid); color: var(--text); box-shadow: 0 30px 80px rgba(0, 0, 0, .45); }
@@ -490,11 +484,6 @@
         </picture>
         <script>(function () { var t = document.documentElement.dataset.theme; if (t) document.getElementById("darkSrc").media = t === "dark" ? "all" : "not all"; })();</script>
         <svg id="overlay" role="group" aria-label="Button hotspots"></svg>
-      </div>
-      <div class="summary">
-        <div><small>DPI</small><b id="sumDpi">2400</b></div>
-        <div><small>Lighting</small><b id="sumLight">Rainbow wave</b></div>
-        <div><small>Polling</small><b id="sumRate">1000 Hz</b></div>
       </div>
     </section>
 
@@ -1058,9 +1047,6 @@ function renderRates() {
 
 const hex = a => a.map(x => x.toString(16).padStart(2, "0")).join(" ");
 function renderSummary() {
-  $("sumDpi").textContent = cfg.dpi.levels[cfg.dpi.current - 1];
-  $("sumLight").textContent = LIGHT_MODES[cfg.lighting.mode][0];
-  $("sumRate").textContent = cfg.pollingHz + " Hz";
   $("log").textContent = buildPackets(cfg).map(([n, p]) => n.padEnd(16) + hex(p)).join("\n");
 }
 
