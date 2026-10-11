@@ -152,13 +152,6 @@
   .btn.ghost { background: transparent; }
   .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; filter: none; }
   .btn.lg { padding: 14px 22px; font-size: 15px; border-radius: 13px; }
-  .pill { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted);
-          padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--chip); }
-  .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); }
-  .pill.on { color: var(--text); border-color: rgba(61, 220, 132, .35); }
-  .pill.warn { color: var(--text); border-color: rgba(255, 176, 32, .45); }
-  .pill.warn .dot { background: #ffb020; }
-  .pill.on .dot { background: var(--ok); box-shadow: 0 0 0 0 rgba(61, 220, 132, .6); animation: pulse 2s infinite; }
   @keyframes pulse { 70% { box-shadow: 0 0 0 8px rgba(61, 220, 132, 0); } 100% { box-shadow: 0 0 0 0 rgba(61, 220, 132, 0); } }
 
   /* ---------- hero ---------- */
@@ -213,14 +206,7 @@
   .stage.compact .callout, .stage.compact .lead-line, .stage.compact .anchor { display: none; }
   .stage.compact .spot circle.core { r: 17; }
   .stage.compact .spot text { font-size: 17px; }
-  .summary { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 8px; }
-  .batt b { display: flex; align-items: center; gap: 8px; }
-  .gauge { position: relative; width: 26px; height: 13px; border: 2px solid var(--muted); border-radius: 4px; flex: none; }
-  .gauge::after { content: ""; position: absolute; right: -5px; top: 2px; width: 3px; height: 5px; border-radius: 0 2px 2px 0; background: var(--muted); }
-  .gauge i { position: absolute; left: 1px; top: 1px; bottom: 1px; width: 0; border-radius: 1px; background: var(--ok); transition: width .3s; }
-  .batt.low .gauge i { background: var(--err); }
-  .batt.mid .gauge i { background: #ffb020; }
-  .batt.unknown b { color: var(--faint); font-weight: 500; font-size: 13px; }
+  .summary { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
   .summary div { padding: 10px 12px; border-radius: 12px; background: var(--well); border: 1px solid var(--line); }
   .summary small { display: block; font-size: 12px; color: var(--faint); }
   .summary b { font-size: 15px; }
@@ -298,23 +284,52 @@
 
   /* ---------- apply dock ---------- */
   .dock { position: sticky; bottom: 14px; z-index: 20; margin-top: 18px; }
-  .dock .inner { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 10px 10px 16px;
-                 border-radius: 16px; border: 1px solid var(--line-2); background: var(--dock); backdrop-filter: blur(14px);
+  .dock .inner { position: relative; overflow: hidden; display: grid; align-items: center; gap: 10px 12px; padding: 8px;
+                 grid-template-columns: auto auto minmax(0, 1fr) auto auto; grid-template-areas: "chip seg msg tools apply";
+                 border-radius: 18px; border: 1px solid var(--line-2); background: var(--dock); backdrop-filter: blur(14px);
                  box-shadow: var(--shadow); }
-  .dock .inner { flex-wrap: nowrap; }
-  .dock .msg { flex: 1; min-width: 0; font-size: 13.5px; color: var(--muted); }
-  @media (max-width: 560px) {
-    .dock .inner { flex-wrap: wrap; }
-    .dock .msg { flex-basis: 100%; font-size: 12.5px; }
-    .dock .btn { flex: 1; padding: 10px 12px; }
-    .brand small, #statusText { display: none; }
-    .brand { white-space: nowrap; }
-    .pill { padding: 10px; }
+  .devchip { grid-area: chip; display: flex; align-items: center; gap: 10px; min-width: 0; padding: 6px 12px 6px 6px; border-radius: 13px;
+             font: inherit; color: var(--text); text-align: left; cursor: pointer; border: 1px solid var(--line); background: var(--well); transition: border-color .15s; }
+  .devchip:hover { border-color: var(--line-2); }
+  .devchip:disabled { cursor: not-allowed; opacity: .6; }
+  .dc-icon { position: relative; width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: 10px;
+             background: var(--raise); color: var(--muted); border: 1px solid var(--line); }
+  .dc-icon .dot { position: absolute; right: -3px; bottom: -3px; width: 11px; height: 11px; border-radius: 50%;
+                  background: var(--faint); border: 2px solid var(--panel-solid); }
+  .dc-text { display: grid; line-height: 1.2; min-width: 0; flex: 1 1 auto; }
+  .dc-text b { font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dc-text small { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .devchip.on { border-color: rgba(61, 220, 132, .35); }
+  .devchip.on .dc-icon { color: var(--text); }
+  .devchip.on .dot { background: var(--ok); animation: pulse 2s infinite; }
+  .devchip.warn { border-color: rgba(255, 176, 32, .45); }
+  .devchip.warn .dot { background: #ffb020; }
+  .dc-batt { flex: none; display: flex; align-items: center; gap: 7px; margin-left: 4px; padding-left: 12px; border-left: 1px solid var(--line);
+             font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .dc-batt[hidden] { display: none; }
+  .gauge { position: relative; width: 24px; height: 12px; border: 2px solid var(--muted); border-radius: 4px; flex: none; }
+  .gauge::after { content: ""; position: absolute; right: -5px; top: 2px; width: 3px; height: 4px; border-radius: 0 2px 2px 0; background: var(--muted); }
+  .gauge i { position: absolute; left: 1px; top: 1px; bottom: 1px; width: 0; border-radius: 1px; background: var(--ok); transition: width .3s; }
+  .dc-batt.low .gauge i { background: var(--err); } .dc-batt.mid .gauge i { background: #ffb020; }
+  .dock .seg { grid-area: seg; }
+  .dock .msg { grid-area: msg; min-width: 0; font-size: 13px; line-height: 1.35; color: var(--muted); padding: 0 4px; }
+  .dtools { grid-area: tools; display: flex; gap: 6px; }
+  .dock #apply { grid-area: apply; }
+  .dock .progress { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; height: 3px; border-radius: 0; }
+  @media (max-width: 900px) {
+    .dock .inner { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "chip apply" "seg tools" "msg msg"; }
+    .dock .msg { padding: 0 6px 2px; }
   }
-  .tools { display: flex; gap: 6px; flex-wrap: wrap; padding: 12px 14px; border-top: 1px solid var(--line); background: var(--well); }
-  .btn.sm { font-size: 12.5px; padding: 7px 11px; border-radius: 9px; }
+  @media (max-width: 560px) {
+    .dc-batt { padding-left: 8px; margin-left: 0; }
+    .dock .inner { grid-template-areas: "chip chip" "seg apply" "msg tools"; }
+    .dock .long { display: none; }
+    .dock #apply { padding: 10px 18px; }
+    .brand small { display: none; }
+    .brand { white-space: nowrap; }
+  }
   .dock .msg.ok { color: var(--ok); } .dock .msg.err { color: var(--err); }
-  .progress { height: 3px; border-radius: 99px; background: var(--track); overflow: hidden; margin-top: 6px; display: none; }
+  .progress { height: 3px; border-radius: 99px; background: var(--track); overflow: hidden; display: none; }
   .progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .15s; }
   .progress.on { display: block; }
 
@@ -375,7 +390,7 @@
     .brow > :last-child { grid-column: 1 / -1; }
     .dpirow { grid-template-columns: 60px 1fr 70px 28px; gap: 8px; }
     .fx { grid-template-columns: repeat(2, 1fr); }
-    .summary { grid-template-columns: 1fr 1fr; }
+    .summary { grid-template-columns: 1fr 1fr 1fr; }
     .summary b { font-size: 13px; }
   }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
@@ -397,7 +412,6 @@
       <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
     </button>
     <a class="iconbtn" href="https://github.com/ffrafat/meetion-gw32-web-driver" target="_blank" rel="noopener" aria-label="Source code on GitHub" title="Source code on GitHub"><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
-    <span class="pill" id="statusPill"><span class="dot"></span><span id="statusText">Not connected</span></span>
   </div>
 </nav>
 
@@ -428,10 +442,6 @@
           <h2 id="stageTitle">Meetion GW32 button layout</h2>
           <div class="sub">Click a button on the mouse to remap it</div>
         </div>
-        <div style="flex:1"></div>
-        <div class="seg" role="tablist" aria-label="Button mode" id="modeSeg">
-          <button data-mode="1" class="on" role="tab">Mode 1</button><button data-mode="2" role="tab">Mode 2</button>
-        </div>
       </div>
       <div class="stage" id="stage">
         <div class="glow" id="glow"></div>
@@ -447,10 +457,6 @@
         <div><small>DPI</small><b id="sumDpi">2400</b></div>
         <div><small>Lighting</small><b id="sumLight">Rainbow wave</b></div>
         <div><small>Polling</small><b id="sumRate">1000 Hz</b></div>
-        <div class="batt" id="battTile" title="Battery level is reported by the mouse in 10% steps">
-          <small>Battery</small>
-          <b><span class="gauge" aria-hidden="true"><i id="battFill"></i></span><span id="sumBatt">—</span></b>
-        </div>
       </div>
     </section>
 
@@ -495,20 +501,28 @@
         <details class="raw"><summary>Show raw USB packets</summary><pre id="log"></pre></details>
       </div>
 
-      <div class="tools">
-        <button class="btn ghost sm" id="reset" title="Load the GW32 factory settings">Factory defaults</button>
-        <button class="btn ghost sm" id="export" title="Save these settings to a file">Export</button>
-        <button class="btn ghost sm" id="import" title="Load settings from a file">Import</button>
-        <input type="file" id="importFile" accept="application/json" hidden>
-      </div>
     </section>
   </div>
 
   <div class="dock">
     <div class="inner">
-      <div class="msg" id="msg">Connect the mouse with its USB-C cable or 2.4G receiver to begin.<div class="progress" id="progress"><i></i></div></div>
-      <button class="btn" id="connect">Connect</button>
-      <button class="btn primary" id="apply" disabled>Apply to mouse</button>
+      <button class="devchip" id="devChip" type="button" title="Connect your GW32">
+        <span class="dc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="6"/><path d="M12 6v4"/></svg><span class="dot"></span></span>
+        <span class="dc-text"><b id="chipName">Not connected</b><small id="chipSub">Click to connect</small></span>
+        <span class="dc-batt" id="chipBatt" hidden title="Battery level, reported by the mouse in 10% steps"><span class="gauge" aria-hidden="true"><i id="battFill"></i></span><span id="battPct"></span></span>
+      </button>
+      <div class="seg" role="tablist" aria-label="Button mode to edit" id="modeSeg">
+        <button data-mode="1" class="on" role="tab">Mode 1</button><button data-mode="2" role="tab">Mode 2</button>
+      </div>
+      <div class="msg" id="msg" role="status" aria-live="polite">Connect the mouse with its USB-C cable or 2.4G receiver to begin.</div>
+      <div class="dtools">
+        <button class="iconbtn" id="import" type="button" title="Import settings from a file" aria-label="Import settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg></button>
+        <button class="iconbtn" id="export" type="button" title="Export settings to a file" aria-label="Export settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></button>
+        <button class="iconbtn" id="reset" type="button" title="Load GW32 factory defaults" aria-label="Load factory defaults"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+        <input type="file" id="importFile" accept="application/json" hidden>
+      </div>
+      <button class="btn primary" id="apply" disabled>Apply<span class="long"> to mouse</span></button>
+      <div class="progress" id="progress"><i></i></div>
     </div>
   </div>
 </main>
@@ -852,7 +866,7 @@ const sv = (tag, attrs = {}, ...kids) => { const e = document.createElementNS(SV
 const fill = r => r.style.setProperty("--fill", ((r.value - r.min) / (r.max - r.min) * 100) + "%");
 let toastTimer;
 function toast(t) { const e = $("toast"); e.textContent = t; e.classList.add("on"); clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove("on"), 2600); }
-function msg(t, cls = "") { const m = $("msg"); m.firstChild.nodeValue = t; m.className = "msg " + cls; }
+function msg(t, cls = "") { const m = $("msg"); m.textContent = t; m.className = "msg " + cls; }
 
 // ---------- stage ----------
 function layoutStage() {
@@ -1024,7 +1038,7 @@ function renderSummary() {
 function renderAll() { renderButtons(); renderStage(); renderDpi(); renderLighting(); renderRates(); renderSummary(); }
 function changed() {
   save(); renderSummary(); dirty = true;
-  if (device) msg("Unsaved changes — press Apply to write them to the mouse.");
+  if (device) msg("Unsaved changes. Press Apply to save them.");
 }
 function showTab(name) {
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === name));
@@ -1087,29 +1101,30 @@ function onInputReport(e) {
 }
 
 function renderLink() {
-  const d = device, pill = $("statusPill");
-  let text = "Not connected", state = "";
-  if (d && !isReceiver(d)) { text = "GW32 connected · USB"; state = "on"; }
-  else if (d && linked()) { text = "GW32 connected · 2.4G"; state = "on"; }
-  else if (d) { text = "Receiver found · mouse not linked"; state = "warn"; }
-  if (state === "on" && link.battery != null && (isReceiver(d) ? linked() : Date.now() - link.last < 5000))
-    text += ` · ${link.charging ? "⚡" : ""}${link.battery}%`;
+  const d = device, chip = $("devChip");
+  let name = "Not connected", sub = "Click to connect", state = "";
+  if (d && !isReceiver(d)) { name = "GW32 · USB"; sub = "Connected"; state = "on"; }
+  else if (d && linked()) { name = "GW32 · 2.4G"; sub = "Connected"; state = "on"; }
+  else if (d) { name = "Receiver"; sub = "Switch mouse to 2.4G"; state = "warn"; }
+  chip.className = "devchip" + (state ? " " + state : "");
+  $("chipName").textContent = name;
+  $("chipSub").textContent = sub;
   const fresh = !!d && Date.now() - link.last < 5000 && link.battery != null;
-  const tile = $("battTile");
-  tile.className = "batt" + (!fresh ? " unknown" : link.battery <= 20 ? " low" : link.battery <= 40 ? " mid" : "");
-  $("battFill").style.width = fresh ? `calc(${link.battery}% - 2px)` : "0";
-  $("sumBatt").textContent = fresh ? `${link.battery}%${link.charging ? " ⚡" : ""}` : (d && isReceiver(d) ? "Mouse not linked" : d ? "Not reported" : "Connect mouse");
+  const batt = $("chipBatt");
+  batt.hidden = !fresh;
+  if (fresh) {
+    batt.className = "dc-batt" + (link.battery <= 20 ? " low" : link.battery <= 40 ? " mid" : "");
+    $("battFill").style.width = `calc(${link.battery}% - 2px)`;
+    $("battPct").textContent = `${link.charging ? "⚡" : ""}${link.battery}%`;
+  }
+  chip.title = d ? `${name} · ${sub}${fresh ? ` · battery ${link.battery}%` : ""}` : "Connect your GW32";
   if (d && isReceiver(d)) {
-    const hint = "Receiver connected. Make sure the mouse is switched to 2.4G mode, then press Apply.";
-    const ready = "Mouse linked over 2.4G. Customize your mouse, then press Apply.";
-    const cur = $("msg").firstChild.nodeValue;
+    const hint = "Receiver connected. Switch the mouse to 2.4G mode.";
+    const ready = "Mouse linked. Customize, then press Apply.";
+    const cur = $("msg").textContent;
     if (linked() && cur === hint) msg(ready, "ok");
     else if (!linked() && cur === ready) msg(hint, "ok");
   }
-  pill.classList.toggle("on", state === "on");
-  pill.classList.toggle("warn", state === "warn");
-  $("statusText").textContent = text;
-  pill.title = text;
 }
 setInterval(() => { if (device) renderLink(); }, 1000);
 
@@ -1120,17 +1135,16 @@ function setDevice(d) {
   if (d) d.addEventListener("inputreport", onInputReport);
   renderLink();
   $("apply").disabled = !d;
-  $("connect").textContent = d ? "Reconnect" : "Connect";
   $("connectHero").textContent = d ? "Connected ✓  Customize below" : "Connect your GW32";
   msg(!d ? "Connect the mouse with its USB-C cable or 2.4G receiver to begin."
-    : isReceiver(d) ? "Receiver connected. Make sure the mouse is switched to 2.4G mode, then press Apply."
-    : (dirty ? "Connected. Press Apply to write your settings." : "Connected. Customize your mouse, then press Apply."), d ? "ok" : "");
+    : isReceiver(d) ? "Receiver connected. Switch the mouse to 2.4G mode."
+    : (dirty ? "Connected. Press Apply to save your changes." : "Connected. Customize, then press Apply."), d ? "ok" : "");
 }
 async function openDevice(d) { if (!d.opened) await d.open(); setDevice(d); }
 
 async function connect() {
   if (!("hid" in navigator)) return $("unsupported").scrollIntoView({ behavior: "smooth", block: "center" });
-  if (device) return document.getElementById("configure").scrollIntoView({ behavior: "smooth" });
+  if (device) return toast($("devChip").title);
   try {
     const picked = await navigator.hid.requestDevice({ filters: [{ vendorId: VID, usagePage: 0x0b }, { vendorId: VID }] });
     if (!picked.length) return;
@@ -1141,7 +1155,7 @@ async function connect() {
     document.getElementById("configure").scrollIntoView({ behavior: "smooth" });
   } catch (err) { msg(err.message, "err"); }
 }
-$("connect").onclick = connect;
+$("devChip").onclick = connect;
 $("connectHero").onclick = connect;
 
 // Byte length the device declares for a feature report (cable and receiver differ slightly).
@@ -1239,7 +1253,7 @@ function init() {
   renderLink();
   if (!("hid" in navigator)) {
     $("unsupported").classList.add("show");
-    $("connect").disabled = true;
+    $("devChip").disabled = true;
     msg("Open this page in Chrome, Edge, Brave or Opera on a computer.", "err");
   } else {
     navigator.hid.getDevices().then(ds => { const d = ds.find(isConfigInterface); if (d) openDevice(d).catch(() => {}); });
