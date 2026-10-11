@@ -173,8 +173,15 @@
   .notice.show { display: block; }
 
   /* ---------- app ---------- */
-  .app { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(340px, 1fr); gap: 18px; align-items: start; }
-  @media (max-width: 980px) { .app { grid-template-columns: 1fr; } }
+  .app { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(340px, 1fr); gap: 18px; align-items: stretch; }
+  .panel-inner { display: flex; flex-direction: column; }
+  @media (min-width: 981px) {
+    /* the settings panel takes the mouse panel's height; long tabs scroll inside it */
+    .panel { position: relative; min-height: 0; }
+    .panel-inner { position: absolute; inset: 0; }
+    .panel-inner .tabpane.on { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+  }
+  @media (max-width: 980px) { .app { grid-template-columns: 1fr; align-items: start; } }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
           box-shadow: 0 20px 60px var(--well-2); backdrop-filter: blur(10px); }
   .stage-card { position: relative; overflow: hidden; padding: 18px; }
@@ -276,9 +283,21 @@
   .rates label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-soft); }
   .rates label:has(input:focus-visible) { outline: 2px solid var(--accent); }
 
-  details.raw { margin-top: 16px; font-size: 13px; color: var(--muted); }
-  details.raw pre { font-family: var(--mono); font-size: 11px; white-space: pre-wrap; word-break: break-all; color: var(--muted);
-                    background: var(--well-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px; max-height: 240px; overflow: auto; }
+
+  .debug { margin-top: 18px; padding: 0; }
+  .debug summary { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; padding: 14px 18px; cursor: pointer; list-style: none; }
+  .debug summary::-webkit-details-marker { display: none; }
+  .debug summary::before { content: "›"; display: inline-block; color: var(--muted); font-size: 18px; line-height: 1; transition: transform .15s; }
+  .debug[open] summary::before { transform: rotate(90deg); }
+  .dbg-title { font-weight: 700; font-size: 14.5px; }
+  .dbg-sub { color: var(--faint); font-size: 13px; }
+  .dbg-body { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 0 18px; }
+  @media (max-width: 760px) { .dbg-body { grid-template-columns: 1fr; } }
+  .dbg-col h4 { display: flex; align-items: center; justify-content: space-between; min-height: 30px; margin: 0 0 8px; font-size: 13px; color: var(--muted); }
+  .btn.sm { font-size: 12.5px; padding: 5px 11px; border-radius: 8px; }
+  .dbg-col pre { margin: 0; font-family: var(--mono); font-size: 11px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; color: var(--muted);
+                 background: var(--well-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px; height: 260px; overflow: auto; }
+  .dbg-dev { padding: 0 18px 16px; }
 
   /* ---------- apply dock ---------- */
   .dock { position: sticky; top: 70px; z-index: 25; margin-bottom: 18px; scroll-margin-top: 70px; }
@@ -512,6 +531,7 @@
     </section>
 
     <section class="card panel" aria-label="Settings">
+      <div class="panel-inner">
       <div class="tabs" role="tablist">
         <button class="on" data-tab="buttons" role="tab">Buttons</button>
         <button data-tab="dpi" role="tab">DPI</button>
@@ -547,11 +567,28 @@
         <h3>Polling rate</h3>
         <div class="rates" id="rates"></div>
         <p class="note">Higher polling rates feel more responsive but use more battery in wireless modes.</p>
-        <details class="raw"><summary>Show raw USB packets</summary><pre id="log"></pre></details>
       </div>
-
+      </div>
     </section>
   </div>
+
+  <details class="card debug" id="debug">
+    <summary>
+      <span class="dbg-title">Developer tools</span>
+      <span class="dbg-sub">Raw USB packets and live device events</span>
+    </summary>
+    <div class="dbg-body">
+      <div class="dbg-col">
+        <h4>Packets Apply will send</h4>
+        <pre id="log"></pre>
+      </div>
+      <div class="dbg-col">
+        <h4>Live log <button class="btn ghost sm" id="clearLog" type="button">Clear</button></h4>
+        <pre id="evlog"></pre>
+      </div>
+    </div>
+    <p class="note dbg-dev" id="devInfo">No device connected.</p>
+  </details>
 
 </main>
 
@@ -895,6 +932,14 @@ let cfg = clone(DEFAULTS);
 try { const s = localStorage.getItem(STORE); if (s) cfg = Object.assign(clone(DEFAULTS), JSON.parse(s)); } catch {}
 const save = () => { try { localStorage.setItem(STORE, JSON.stringify(cfg)); } catch {} };
 let editMode = 1, selected = null, device = null, dirty = false;
+const evlog = [];
+function logLine(text) {
+  const t = new Date().toLocaleTimeString([], { hour12: false });
+  evlog.push(`${t}  ${text}`);
+  if (evlog.length > 300) evlog.shift();
+  const el = document.getElementById("evlog");
+  if (el) { el.textContent = evlog.join("\n"); el.scrollTop = el.scrollHeight; }
+}
 
 // ===========================================================================
 // UI helpers
@@ -1068,7 +1113,7 @@ function renderRates() {
 
 const hex = a => a.map(x => x.toString(16).padStart(2, "0")).join(" ");
 function renderSummary() {
-  $("log").textContent = buildPackets(cfg).map(([n, p]) => n.padEnd(16) + hex(p)).join("\n");
+  $("log").textContent = buildPackets(cfg).map(([n, p]) => n.padEnd(19) + hex(p)).join("\n");
 }
 
 function renderAll() { renderButtons(); renderStage(); renderDpi(); renderLighting(); renderRates(); renderSummary(); }
@@ -1127,9 +1172,15 @@ const link = { last: 0, battery: null, charging: false };
 let ackWaiter = null;
 const linked = () => Date.now() - link.last < 5000;
 
+let lastBeat = -1;
 function onInputReport(e) {
   if (e.reportId !== 3 || e.data.byteLength < 4) return;
   const code = e.data.getUint16(0, true), val = e.data.getUint16(2, true);
+  const h4 = n => "0x" + n.toString(16).padStart(4, "0");
+  const what = { 0x4010: `heartbeat · battery ${(val >> 8) * 10}%${(val & 0xff) === 0 ? " · charging" : ""}`, 0x5010: (val & 0xff) === 0 ? "write acknowledged" : "write rejected",
+    0x1000: `DPI level → ${val}`, 0x2000: `polling rate changed (${val})`, 0x6000: `battery ${val * 10}%`, 0x8000: `layout → ${val + 1}` }[code] || "unknown event";
+  if (code !== 0x4010 || val !== lastBeat) logLine(`← ${h4(code)} = ${h4(val)}  ${what}${code === 0x4010 ? " (repeats every 2 s)" : ""}`);
+  if (code === 0x4010) lastBeat = val;
   if (code === 0x4010) {                    // heartbeat while the mouse is linked: battery level (1–10) + charging flag
     link.last = Date.now();
     const lvl = val >> 8;
@@ -1174,6 +1225,10 @@ function setDevice(d) {
   device = d;
   link.last = 0; link.battery = null;
   if (d) d.addEventListener("inputreport", onInputReport);
+  lastBeat = -1;
+  const sizes = d ? [0x04, 0x05, 0x06, 0x08, 0x0c].map(id => `${id.toString(16).padStart(2, "0")}:${featureLen(d, id) + 1}`).join(" ") : "";
+  $("devInfo").textContent = d ? `Device: ${d.productName || "MEETION"} · ${d.vendorId.toString(16)}:${d.productId.toString(16)} · ${isReceiver(d) ? "2.4G receiver" : "USB cable"} · feature report sizes ${sizes}` : "No device connected.";
+  logLine(d ? `connected ${d.vendorId.toString(16)}:${d.productId.toString(16)} (${isReceiver(d) ? "receiver" : "cable"})` : "disconnected");
   renderLink();
   $("apply").disabled = !d;
   $("connectHero").classList.toggle("connected", !!d);
@@ -1196,6 +1251,7 @@ async function connect() {
   } catch (err) { msg(err.message, "err"); }
 }
 $("devConnect").onclick = connect;
+$("clearLog").onclick = () => { evlog.length = 0; $("evlog").textContent = ""; };
 
 // ---------- active layout: switched instantly with the "set layout" command ----------
 let busy = false;
@@ -1243,6 +1299,7 @@ async function sendPacket(p) {
   let data = p.slice(1);
   if (n) data = data.slice(0, n).concat(new Array(Math.max(0, n - data.length)).fill(0));
   await device.sendFeatureReport(p[0], new Uint8Array(data));
+  logLine(`→ ${[p[0], ...data].map(x => x.toString(16).padStart(2, "0")).join(" ")}`);
 }
 // Over the receiver the mouse confirms every packet; resend up to 10 times like the official driver.
 async function sendAcked(p) {
