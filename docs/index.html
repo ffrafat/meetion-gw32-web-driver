@@ -213,7 +213,14 @@
   .stage.compact .callout, .stage.compact .lead-line, .stage.compact .anchor { display: none; }
   .stage.compact .spot circle.core { r: 17; }
   .stage.compact .spot text { font-size: 17px; }
-  .summary { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
+  .summary { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 8px; }
+  .batt b { display: flex; align-items: center; gap: 8px; }
+  .gauge { position: relative; width: 26px; height: 13px; border: 2px solid var(--muted); border-radius: 4px; flex: none; }
+  .gauge::after { content: ""; position: absolute; right: -5px; top: 2px; width: 3px; height: 5px; border-radius: 0 2px 2px 0; background: var(--muted); }
+  .gauge i { position: absolute; left: 1px; top: 1px; bottom: 1px; width: 0; border-radius: 1px; background: var(--ok); transition: width .3s; }
+  .batt.low .gauge i { background: var(--err); }
+  .batt.mid .gauge i { background: #ffb020; }
+  .batt.unknown b { color: var(--faint); font-weight: 500; font-size: 13px; }
   .summary div { padding: 10px 12px; border-radius: 12px; background: var(--well); border: 1px solid var(--line); }
   .summary small { display: block; font-size: 12px; color: var(--faint); }
   .summary b { font-size: 15px; }
@@ -368,7 +375,7 @@
     .brow > :last-child { grid-column: 1 / -1; }
     .dpirow { grid-template-columns: 60px 1fr 70px 28px; gap: 8px; }
     .fx { grid-template-columns: repeat(2, 1fr); }
-    .summary { grid-template-columns: 1fr 1fr 1fr; }
+    .summary { grid-template-columns: 1fr 1fr; }
     .summary b { font-size: 13px; }
   }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
@@ -404,7 +411,7 @@
   </div>
   <dl class="stats">
     <div><dt>Buttons</dt><dd>9</dd></div><div><dt>DPI range</dt><dd>400–8000</dd></div>
-    <div><dt>RGB effects</dt><dd>12</dd></div><div><dt>Polling</dt><dd>1000 Hz</dd></div><div><dt>Install</dt><dd>None</dd></div>
+    <div><dt>RGB effects</dt><dd>12</dd></div><div><dt>Polling</dt><dd>1000 Hz</dd></div>
   </dl>
 </header>
 
@@ -440,6 +447,10 @@
         <div><small>DPI</small><b id="sumDpi">2400</b></div>
         <div><small>Lighting</small><b id="sumLight">Rainbow wave</b></div>
         <div><small>Polling</small><b id="sumRate">1000 Hz</b></div>
+        <div class="batt" id="battTile" title="Battery level is reported by the mouse in 10% steps">
+          <small>Battery</small>
+          <b><span class="gauge" aria-hidden="true"><i id="battFill"></i></span><span id="sumBatt">—</span></b>
+        </div>
       </div>
     </section>
 
@@ -1083,6 +1094,18 @@ function renderLink() {
   else if (d) { text = "Receiver found · mouse not linked"; state = "warn"; }
   if (state === "on" && link.battery != null && (isReceiver(d) ? linked() : Date.now() - link.last < 5000))
     text += ` · ${link.charging ? "⚡" : ""}${link.battery}%`;
+  const fresh = !!d && Date.now() - link.last < 5000 && link.battery != null;
+  const tile = $("battTile");
+  tile.className = "batt" + (!fresh ? " unknown" : link.battery <= 20 ? " low" : link.battery <= 40 ? " mid" : "");
+  $("battFill").style.width = fresh ? `calc(${link.battery}% - 2px)` : "0";
+  $("sumBatt").textContent = fresh ? `${link.battery}%${link.charging ? " ⚡" : ""}` : (d && isReceiver(d) ? "Mouse not linked" : d ? "Not reported" : "Connect mouse");
+  if (d && isReceiver(d)) {
+    const hint = "Receiver connected. Make sure the mouse is switched to 2.4G mode, then press Apply.";
+    const ready = "Mouse linked over 2.4G. Customize your mouse, then press Apply.";
+    const cur = $("msg").firstChild.nodeValue;
+    if (linked() && cur === hint) msg(ready, "ok");
+    else if (!linked() && cur === ready) msg(hint, "ok");
+  }
   pill.classList.toggle("on", state === "on");
   pill.classList.toggle("warn", state === "warn");
   $("statusText").textContent = text;
@@ -1213,6 +1236,7 @@ darkMQ.addEventListener("change", applyTheme);
 
 function init() {
   applyTheme();
+  renderLink();
   if (!("hid" in navigator)) {
     $("unsupported").classList.add("show");
     $("connect").disabled = true;
