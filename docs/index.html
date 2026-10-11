@@ -54,11 +54,11 @@
       "@type": "FAQPage",
       "mainEntity": [
         { "@type": "Question", "name": "Is there a Meetion GW32 driver for Mac?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Meetion only ships a Windows .exe. This free web configurator works on macOS (Intel and Apple Silicon) in Chrome, Edge, Brave or Opera: connect the GW32 with its USB-C cable, click Connect, change settings and press Apply." } },
+          "acceptedAnswer": { "@type": "Answer", "text": "Meetion only ships a Windows .exe. This free web configurator works on macOS (Intel and Apple Silicon) in Chrome, Edge, Brave or Opera: connect the GW32 with its USB-C cable or 2.4G receiver, click Connect, change settings and press Apply." } },
         { "@type": "Question", "name": "Do I need to install anything?",
           "acceptedAnswer": { "@type": "Answer", "text": "No. The configurator runs entirely in the browser using WebHID. Nothing is downloaded or installed and no data leaves your computer." } },
-        { "@type": "Question", "name": "Do my settings work over Bluetooth and the 2.4G receiver?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Settings are written into the mouse's own memory over the USB-C cable, so they keep working in Bluetooth and 2.4 GHz wireless modes and on every computer you use." } },
+        { "@type": "Question", "name": "Can I configure the GW32 over the 2.4G receiver or Bluetooth?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. You can configure the GW32 over the USB-C cable or the 2.4G receiver. Settings are saved in the mouse's own memory, so they keep working in every mode, including Bluetooth, and on every computer you use. Configuring directly over Bluetooth isn't supported yet." } },
         { "@type": "Question", "name": "Does the Meetion GW32 software work on Linux and Chromebook?",
           "acceptedAnswer": { "@type": "Answer", "text": "Yes. Chrome or Chromium on Linux and ChromeOS support WebHID. On Linux you may need a one-line udev rule so the browser can access the mouse." } },
         { "@type": "Question", "name": "Why does it not work in Safari or Firefox?",
@@ -156,6 +156,8 @@
           padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--chip); }
   .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); }
   .pill.on { color: var(--text); border-color: rgba(61, 220, 132, .35); }
+  .pill.warn { color: var(--text); border-color: rgba(255, 176, 32, .45); }
+  .pill.warn .dot { background: #ffb020; }
   .pill.on .dot { background: var(--ok); box-shadow: 0 0 0 0 rgba(61, 220, 132, .6); animation: pulse 2s infinite; }
   @keyframes pulse { 70% { box-shadow: 0 0 0 8px rgba(61, 220, 132, 0); } 100% { box-shadow: 0 0 0 0 rgba(61, 220, 132, 0); } }
 
@@ -493,7 +495,7 @@
 
   <div class="dock">
     <div class="inner">
-      <div class="msg" id="msg">Connect the mouse with its USB-C cable to begin.<div class="progress" id="progress"><i></i></div></div>
+      <div class="msg" id="msg">Connect the mouse with its USB-C cable or 2.4G receiver to begin.<div class="progress" id="progress"><i></i></div></div>
       <button class="btn" id="connect">Connect</button>
       <button class="btn primary" id="apply" disabled>Apply to mouse</button>
     </div>
@@ -505,7 +507,7 @@
     <h2>How to configure the Meetion GW32 on a Mac</h2>
     <p class="sub">Meetion only publishes a Windows driver for the GW32. This page talks to the mouse directly from your browser, so the same steps work on macOS, Windows, Linux and Chromebook.</p>
     <div class="grid3">
-      <article class="tile"><div class="step">1</div><h3>Plug in the USB-C cable</h3><p>Connect the GW32 to your computer with its USB-C cable and open this page in Chrome, Edge, Brave or Opera.</p></article>
+      <article class="tile"><div class="step">1</div><h3>Plug in the cable or receiver</h3><p>Connect the GW32 with its USB-C cable, or plug in the 2.4G receiver and switch the mouse to 2.4G mode. Then open this page in Chrome, Edge, Brave or Opera.</p></article>
       <article class="tile"><div class="step">2</div><h3>Click Connect</h3><p>Pick “MEETION Mouse” in the browser’s device prompt. Nothing is installed; the browser only gets access to this one device.</p></article>
       <article class="tile"><div class="step">3</div><h3>Customize &amp; apply</h3><p>Remap buttons, set DPI, lighting and polling rate, then press Apply. Settings are saved on the mouse and work over Bluetooth and 2.4G too.</p></article>
     </div>
@@ -542,7 +544,7 @@
       </tbody>
     </table>
     <p class="note">* On Linux, allow your user to access the mouse once with a udev rule, then unplug and replug it:</p>
-    <pre class="code">echo 'SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1d57", ATTRS{idProduct}=="fa61", TAG+="uaccess"' | sudo tee /etc/udev/rules.d/70-meetion-gw32.rules
+    <pre class="code">echo 'SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1d57", ATTRS{idProduct}=="fa6[01]", TAG+="uaccess"' | sudo tee /etc/udev/rules.d/70-meetion-gw32.rules
 sudo udevadm control --reload-rules</pre>
   </div>
 </section>
@@ -552,11 +554,11 @@ sudo udevadm control --reload-rules</pre>
     <h2>Meetion GW32 driver FAQ</h2>
     <p class="sub">Common questions about the Meetion GW32 software, Mac support and settings.</p>
     <details open><summary>Is there a Meetion GW32 driver for Mac?</summary>
-      <p>Meetion only provides a Windows .exe. This free web configurator works on macOS (Intel and Apple Silicon) in Chrome, Edge, Brave or Opera: connect the GW32 with its USB-C cable, click Connect, change your settings and press Apply.</p></details>
+      <p>Meetion only provides a Windows .exe. This free web configurator works on macOS (Intel and Apple Silicon) in Chrome, Edge, Brave or Opera: connect the GW32 with its USB-C cable or 2.4G receiver, click Connect, change your settings and press Apply.</p></details>
     <details><summary>Do I need to install anything?</summary>
       <p>No. It runs entirely in your browser using WebHID. Nothing is downloaded or installed and no data leaves your computer — the page has no server, analytics or tracking.</p></details>
-    <details><summary>Do my settings work over Bluetooth and the 2.4G receiver?</summary>
-      <p>Yes. Settings are written into the mouse’s own memory over the USB-C cable, so they keep working in Bluetooth and 2.4 GHz wireless modes and on every computer you use — even ones without any software.</p></details>
+    <details><summary>Can I configure the GW32 over the 2.4G receiver or Bluetooth?</summary>
+      <p>You can configure the GW32 over the USB-C cable or the 2.4G receiver (switch the mouse to 2.4G mode first — the page checks that the mouse is linked and waits for it to confirm every change). Settings are saved in the mouse’s own memory, so they keep working in every mode, including Bluetooth, and on every computer you use. Configuring directly over Bluetooth isn’t supported yet.</p></details>
     <details><summary>Does it work on Linux and Chromebook?</summary>
       <p>Yes. Chrome or Chromium on Linux and ChromeOS support WebHID. On Linux, add the one-line udev rule shown above so the browser is allowed to open the mouse.</p></details>
     <details><summary>Why doesn’t it work in Safari or Firefox?</summary>
@@ -566,7 +568,7 @@ sudo udevadm control --reload-rules</pre>
     <details><summary>How do I reset the Meetion GW32 to factory settings?</summary>
       <p>Click Reset, then Apply to mouse. This writes the original layout (left, right, middle, DPI cycle, forward, back, mute, volume −, volume +), DPI 1200/2400/3200/6400, Rainbow Wave lighting and 1000 Hz polling.</p></details>
     <details><summary>Which mice are supported?</summary>
-      <p>The Meetion GW32 (MT-GW32) tri-mode wireless gaming mouse over its USB-C cable (USB ID 1d57:fa61). Other Meetion models use different layouts and aren’t supported yet.</p></details>
+      <p>The Meetion GW32 (MT-GW32) tri-mode wireless gaming mouse over its USB-C cable (USB ID 1d57:fa61) or its 2.4G receiver (1d57:fa60). Other Meetion models use different layouts and aren’t supported yet.</p></details>
     <details><summary>Is this the official Meetion software?</summary>
       <p>No. It’s an independent, free, <a href="https://github.com/ffrafat/meetion-gw32-web-driver" target="_blank" rel="noopener">open-source</a> community tool created by Faisal F Rafat that speaks the same USB protocol as the official Windows driver. It isn’t affiliated with or endorsed by Meetion. Use at your own risk; you can always restore defaults with Reset → Apply.</p></details>
   </div>
@@ -1047,14 +1049,59 @@ addEventListener("resize", () => { layoutStage(); });
 const isConfigInterface = d => d.vendorId === VID &&
   d.collections.some(c => c.usagePage === 0x0b || (c.featureReports || []).some(r => r.reportId === 0x08));
 
+const PID_CABLE = 0xfa61;
+const isReceiver = d => !!d && d.productId !== PID_CABLE;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+// Status the mouse reports through input report 3: [code lo, code hi, value lo, value hi]
+const link = { last: 0, battery: null, charging: false };
+let ackWaiter = null;
+const linked = () => Date.now() - link.last < 5000;
+
+function onInputReport(e) {
+  if (e.reportId !== 3 || e.data.byteLength < 4) return;
+  const code = e.data.getUint16(0, true), val = e.data.getUint16(2, true);
+  if (code === 0x4010) {                    // heartbeat while the mouse is linked: battery level (1–10) + charging flag
+    link.last = Date.now();
+    const lvl = val >> 8;
+    if (lvl >= 1 && lvl <= 10) link.battery = lvl * 10;
+    link.charging = (val & 0xff) === 0;
+    renderLink();
+  } else if (code === 0x6000 && val >= 1 && val <= 10) {
+    link.battery = val * 10; renderLink();
+  } else if (code === 0x5010) {             // write acknowledged; value 0 = OK
+    if (ackWaiter) ackWaiter((val & 0xff) === 0);
+  } else if (code === 0x1000 && val >= 1 && val <= cfg.dpi.levels.length) {   // DPI button pressed on the mouse
+    cfg.dpi.current = val; save(); renderDpi(); renderSummary();
+  }
+}
+
+function renderLink() {
+  const d = device, pill = $("statusPill");
+  let text = "Not connected", state = "";
+  if (d && !isReceiver(d)) { text = "GW32 connected · USB"; state = "on"; }
+  else if (d && linked()) { text = "GW32 connected · 2.4G"; state = "on"; }
+  else if (d) { text = "Receiver found · mouse not linked"; state = "warn"; }
+  if (state === "on" && link.battery != null && (isReceiver(d) ? linked() : Date.now() - link.last < 5000))
+    text += ` · ${link.charging ? "⚡" : ""}${link.battery}%`;
+  pill.classList.toggle("on", state === "on");
+  pill.classList.toggle("warn", state === "warn");
+  $("statusText").textContent = text;
+  pill.title = text;
+}
+setInterval(() => { if (device) renderLink(); }, 1000);
+
 function setDevice(d) {
+  if (device && device !== d) device.removeEventListener("inputreport", onInputReport);
   device = d;
-  $("statusPill").classList.toggle("on", !!d);
-  $("statusText").textContent = d ? "GW32 connected" : "Not connected";
+  link.last = 0; link.battery = null;
+  if (d) d.addEventListener("inputreport", onInputReport);
+  renderLink();
   $("apply").disabled = !d;
   $("connect").textContent = d ? "Reconnect" : "Connect";
   $("connectHero").textContent = d ? "Connected ✓  Customize below" : "Connect your GW32";
-  msg(d ? (dirty ? "Connected. Press Apply to write your settings." : "Connected. Customize your mouse, then press Apply.") : "Connect the mouse with its USB-C cable to begin.", d ? "ok" : "");
+  msg(!d ? "Connect the mouse with its USB-C cable or 2.4G receiver to begin."
+    : isReceiver(d) ? "Receiver connected. Make sure the mouse is switched to 2.4G mode, then press Apply."
+    : (dirty ? "Connected. Press Apply to write your settings." : "Connected. Customize your mouse, then press Apply."), d ? "ok" : "");
 }
 async function openDevice(d) { if (!d.opened) await d.open(); setDevice(d); }
 
@@ -1065,34 +1112,80 @@ async function connect() {
     const picked = await navigator.hid.requestDevice({ filters: [{ vendorId: VID, usagePage: 0x0b }, { vendorId: VID }] });
     if (!picked.length) return;
     const d = picked.find(isConfigInterface);
-    if (!d) return msg("That entry doesn’t accept settings — choose the other “MEETION Mouse” entry.", "err");
+    if (!d) return msg("That entry doesn’t accept settings — choose the other “MEETION” entry.", "err");
     await openDevice(d);
-    toast("Meetion GW32 connected");
+    toast(isReceiver(d) ? "2.4G receiver connected" : "Meetion GW32 connected");
     document.getElementById("configure").scrollIntoView({ behavior: "smooth" });
   } catch (err) { msg(err.message, "err"); }
 }
 $("connect").onclick = connect;
 $("connectHero").onclick = connect;
 
+// Byte length the device declares for a feature report (cable and receiver differ slightly).
+function featureLen(d, id) {
+  const walk = cs => { for (const c of cs || []) {
+    for (const r of c.featureReports || []) if (r.reportId === id) return r.items.reduce((n, it) => n + it.reportSize * it.reportCount, 0) / 8;
+    const n = walk(c.children); if (n) return n;
+  } return 0; };
+  return walk(d.collections);
+}
+async function sendPacket(p) {
+  const n = featureLen(device, p[0]);
+  let data = p.slice(1);
+  if (n) data = data.slice(0, n).concat(new Array(Math.max(0, n - data.length)).fill(0));
+  await device.sendFeatureReport(p[0], new Uint8Array(data));
+}
+// Over the receiver the mouse confirms every packet; resend up to 10 times like the official driver.
+async function sendAcked(p) {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const ack = new Promise(res => { ackWaiter = res; setTimeout(() => res(null), 350); });
+    await sendPacket(p);
+    const ok = await ack;
+    ackWaiter = null;
+    if (ok === true) return true;
+  }
+  return false;
+}
+
 $("apply").onclick = async () => {
   if (!device) return;
   $("apply").disabled = true;
-  const pkts = buildPackets(cfg), bar = $("progress");
-  bar.classList.add("on");
+  const pkts = buildPackets(cfg), bar = $("progress"), wireless = isReceiver(device);
   try {
     if (!device.opened) await device.open();
+    if (wireless && !linked()) {
+      msg("Looking for the mouse…");
+      for (let i = 0; i < 25 && !linked(); i++) await sleep(100);
+      if (!linked()) {
+        msg("The receiver is connected, but the mouse isn’t linked to it. Switch the GW32 to 2.4G mode, move it to wake it, then press Apply again.", "err");
+        return;
+      }
+    }
+    bar.classList.add("on");
+    const unconfirmed = [];
     for (let i = 0; i < pkts.length; i++) {
       const [name, p] = pkts[i];
       msg(`Writing ${name}…`);
       bar.firstElementChild.style.width = ((i + 1) / pkts.length * 100) + "%";
-      await device.sendFeatureReport(p[0], new Uint8Array(p.slice(1)));
-      await new Promise(r => setTimeout(r, 150));
+      if (wireless) {
+        if (!(await sendAcked(p))) {
+          if (i === 0) throw new Error("the mouse didn’t respond. Make sure it’s in 2.4G mode and awake");
+          unconfirmed.push(name);
+        }
+      } else {
+        await sendPacket(p);
+      }
+      await sleep(wireless ? 60 : 150);
     }
     dirty = false;
-    msg("Saved to your mouse. It now works this way everywhere — even over Bluetooth.", "ok");
-    toast("✓ Settings saved to the mouse");
+    if (unconfirmed.length) {
+      msg(`Saved, but the mouse didn’t confirm: ${unconfirmed.join(", ")}. Press Apply again to be sure.`, "err");
+    } else {
+      msg("Saved to your mouse. It now works this way everywhere — even over Bluetooth.", "ok");
+      toast("✓ Settings saved to the mouse");
+    }
   } catch (err) {
-    msg("Write failed: " + err.message + " — unplug and replug the cable, then try again.", "err");
+    msg("Write failed: " + err.message + (wireless ? "." : " — unplug and replug the cable, then try again."), "err");
   } finally {
     $("apply").disabled = !device;
     setTimeout(() => { bar.classList.remove("on"); bar.firstElementChild.style.width = "0"; }, 600);

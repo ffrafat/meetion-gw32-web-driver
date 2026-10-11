@@ -15,19 +15,21 @@ Meetion only ships a Windows `.exe`. This version runs entirely in your browser 
 - 4 DPI levels (400–8000) with indicator colors
 - 12 RGB lighting effects with speed, brightness, color and a sleep timer
 - Polling rate of 125, 250, 500 or 1000 Hz
-- Settings are stored on the mouse, so they keep working over Bluetooth and the 2.4G receiver
+- Configure over the USB-C cable or the 2.4G receiver. Wireless writes are acknowledged by the mouse and retried like the official driver
+- Live battery level when connected
+- Settings are stored on the mouse, so they keep working in every mode, including Bluetooth
 - Export and import settings as JSON
 
 ## How to use
 
-1. Connect the GW32 with its USB-C cable.
+1. Connect the GW32 with its USB-C cable, or plug in the 2.4G receiver and switch the mouse to 2.4G mode.
 2. Open https://ffrafat.github.io/meetion-gw32-web-driver/ in **Chrome, Edge, Brave or Opera**. Safari and Firefox don't support WebHID.
 3. Click **Connect**, change your settings, then click **Apply to mouse**.
 
 On **Linux**, let your user access the mouse once:
 
 ```bash
-echo 'SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1d57", ATTRS{idProduct}=="fa61", TAG+="uaccess"' | sudo tee /etc/udev/rules.d/70-meetion-gw32.rules
+echo 'SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1d57", ATTRS{idProduct}=="fa6[01]", TAG+="uaccess"' | sudo tee /etc/udev/rules.d/70-meetion-gw32.rules
 sudo udevadm control --reload-rules
 ```
 
@@ -47,7 +49,7 @@ Then open http://localhost:8765 in Chrome. WebHID only works on HTTPS or localho
 ## Protocol notes
 
 Reverse-engineered from the official Windows driver (2025-04-08). Settings are HID feature reports sent to the
-USB interface whose top-level collection uses usage page `0x0B` (VID `1d57`, PID `fa61` over the cable). The
+USB interface whose top-level collection uses usage page `0x0B` (VID `1d57`, PID `fa61` over the cable, `fa60` for the 2.4G receiver). The
 mouse doesn't report its settings back, so the full configuration is written every time.
 
 | Report | Purpose | Layout |
@@ -59,6 +61,11 @@ mouse doesn't report its settings back, so the full configuration is written eve
 | `0x08` | buttons (per mode) | 18 slots × 3 bytes, then a 16-bit sum of bytes 3..56, big-endian |
 
 Checksums are plain 16-bit sums starting at byte 3.
+
+The mouse reports status through input report `0x03`: `code = b1 | b2<<8`, `value = b3 | b4<<8`.
+`0x4010` is a heartbeat sent every 2 s while the mouse is linked (value high byte = battery 1–10, low byte 0 = charging),
+`0x5010` acknowledges a write (value 0 = OK), and `0x1000` reports a DPI level change. Over the receiver, every
+settings packet is resent up to 10 times until it is acknowledged.
 
 ## Credits
 
