@@ -283,9 +283,9 @@
                     background: var(--well-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px; max-height: 240px; overflow: auto; }
 
   /* ---------- apply dock ---------- */
-  .dock { position: sticky; bottom: 14px; z-index: 20; margin-top: 18px; }
+  .dock { position: sticky; top: 70px; z-index: 25; margin-bottom: 18px; scroll-margin-top: 70px; }
   .dock .inner { position: relative; overflow: hidden; display: grid; align-items: center; gap: 10px 12px; padding: 8px;
-                 grid-template-columns: auto auto minmax(0, 1fr) auto auto; grid-template-areas: "chip seg msg tools apply";
+                 grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "chip msg tools apply";
                  border-radius: 18px; border: 1px solid var(--line-2); background: var(--dock); backdrop-filter: blur(14px);
                  box-shadow: var(--shadow); }
   .devchip { grid-area: chip; display: flex; align-items: center; gap: 10px; min-width: 0; padding: 6px 12px 6px 6px; border-radius: 13px;
@@ -311,19 +311,25 @@
   .gauge::after { content: ""; position: absolute; right: -5px; top: 2px; width: 3px; height: 4px; border-radius: 0 2px 2px 0; background: var(--muted); }
   .gauge i { position: absolute; left: 1px; top: 1px; bottom: 1px; width: 0; border-radius: 1px; background: var(--ok); transition: width .3s; }
   .dc-batt.low .gauge i { background: var(--err); } .dc-batt.mid .gauge i { background: #ffb020; }
-  .dock .seg { grid-area: seg; }
   .dock .msg { grid-area: msg; min-width: 0; font-size: 13px; line-height: 1.35; color: var(--muted); padding: 0 4px; }
-  .dtools { grid-area: tools; display: flex; gap: 6px; }
+  .dtools { grid-area: tools; display: flex; gap: 6px; min-width: 0; }
+  .btn.tool { display: inline-flex; align-items: center; gap: 7px; padding: 9px 12px; font-size: 13.5px; color: var(--muted); }
+  .btn.tool:hover { color: var(--text); }
+  .dock .msg:empty { display: none; }
+  #apply.pending::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%;
+                           background: currentColor; vertical-align: 1px; opacity: .75; }
   .dock #apply { grid-area: apply; }
   .dock .progress { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; height: 3px; border-radius: 0; }
-  @media (max-width: 900px) {
-    .dock .inner { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "chip apply" "seg tools" "msg msg"; }
+  @media (max-width: 1000px) {
+    .dock .inner { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "chip tools apply" "msg msg msg"; }
     .dock .msg { padding: 0 6px 2px; }
+    .dock .long { display: none; }
+    .btn.tool { padding: 9px 10px; }
   }
   @media (max-width: 560px) {
     .dc-batt { padding-left: 8px; margin-left: 0; }
-    .dock .inner { grid-template-areas: "chip chip" "seg apply" "msg tools"; }
-    .dock .long { display: none; }
+    .dtools .btn.tool { flex: 1; justify-content: center; }
+    .dock .inner { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "chip apply" "tools tools" "msg msg"; }
     .dock #apply { padding: 10px 18px; }
     .brand small { display: none; }
     .brand { white-space: nowrap; }
@@ -393,6 +399,16 @@
     .summary { grid-template-columns: 1fr 1fr 1fr; }
     .summary b { font-size: 13px; }
   }
+  dialog.modal { width: min(420px, calc(100% - 32px)); padding: 26px; border-radius: 20px; border: 1px solid var(--line-2);
+                 background: var(--panel-solid); color: var(--text); box-shadow: 0 30px 80px rgba(0, 0, 0, .45); }
+  dialog.modal[open] { animation: pop .18s ease-out; }
+  dialog.modal::backdrop { background: rgba(8, 8, 7, .55); backdrop-filter: blur(4px); }
+  @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.97); } }
+  .micon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; margin-bottom: 14px;
+           color: var(--accent); background: var(--accent-soft); border: 1px solid rgba(255, 122, 46, .35); }
+  dialog.modal h3 { margin: 0 0 8px; font-size: 19px; letter-spacing: -.01em; }
+  dialog.modal p { margin: 0 0 22px; color: var(--muted); font-size: 14.5px; }
+  .mrow { display: flex; justify-content: flex-end; gap: 10px; }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
 </style>
 </head>
@@ -429,6 +445,25 @@
   </dl>
 </header>
 
+<div class="dock wrap">
+  <div class="inner">
+    <button class="devchip" id="devChip" type="button" title="Connect your GW32">
+      <span class="dc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="6"/><path d="M12 6v4"/></svg><span class="dot"></span></span>
+      <span class="dc-text"><b id="chipName">Not connected</b><small id="chipSub">Click to connect</small></span>
+      <span class="dc-batt" id="chipBatt" hidden title="Battery level, reported by the mouse in 10% steps"><span class="gauge" aria-hidden="true"><i id="battFill"></i></span><span id="battPct"></span></span>
+    </button>
+    <div class="msg" id="msg" role="status" aria-live="polite"></div>
+    <div class="dtools">
+      <button class="btn ghost tool" id="import" type="button" title="Import settings from a file"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg><span>Import</span></button>
+      <button class="btn ghost tool" id="export" type="button" title="Export settings to a file"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span>Export</span></button>
+      <button class="btn ghost tool" id="reset" type="button" title="Load GW32 factory defaults"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span>Reset</span></button>
+      <input type="file" id="importFile" accept="application/json" hidden>
+    </div>
+    <button class="btn primary" id="apply" disabled>Apply<span class="long"> to mouse</span></button>
+    <div class="progress" id="progress"><i></i></div>
+  </div>
+</div>
+
 <main class="wrap" id="configure">
   <div class="notice" id="unsupported" role="alert">
     <b>This browser can’t talk to USB devices.</b> Open this page in <b>Google Chrome</b>, <b>Microsoft Edge</b>, <b>Brave</b> or <b>Opera</b>
@@ -441,6 +476,10 @@
         <div>
           <h2 id="stageTitle">Meetion GW32 button layout</h2>
           <div class="sub">Click a button on the mouse to remap it</div>
+        </div>
+        <div style="flex:1"></div>
+        <div class="seg" role="tablist" aria-label="Button mode to edit" id="modeSeg">
+          <button data-mode="1" class="on" role="tab">Mode 1</button><button data-mode="2" role="tab">Mode 2</button>
         </div>
       </div>
       <div class="stage" id="stage">
@@ -504,27 +543,6 @@
     </section>
   </div>
 
-  <div class="dock">
-    <div class="inner">
-      <button class="devchip" id="devChip" type="button" title="Connect your GW32">
-        <span class="dc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="6"/><path d="M12 6v4"/></svg><span class="dot"></span></span>
-        <span class="dc-text"><b id="chipName">Not connected</b><small id="chipSub">Click to connect</small></span>
-        <span class="dc-batt" id="chipBatt" hidden title="Battery level, reported by the mouse in 10% steps"><span class="gauge" aria-hidden="true"><i id="battFill"></i></span><span id="battPct"></span></span>
-      </button>
-      <div class="seg" role="tablist" aria-label="Button mode to edit" id="modeSeg">
-        <button data-mode="1" class="on" role="tab">Mode 1</button><button data-mode="2" role="tab">Mode 2</button>
-      </div>
-      <div class="msg" id="msg" role="status" aria-live="polite">Connect the mouse with its USB-C cable or 2.4G receiver to begin.</div>
-      <div class="dtools">
-        <button class="iconbtn" id="import" type="button" title="Import settings from a file" aria-label="Import settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg></button>
-        <button class="iconbtn" id="export" type="button" title="Export settings to a file" aria-label="Export settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></button>
-        <button class="iconbtn" id="reset" type="button" title="Load GW32 factory defaults" aria-label="Load factory defaults"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
-        <input type="file" id="importFile" accept="application/json" hidden>
-      </div>
-      <button class="btn primary" id="apply" disabled>Apply<span class="long"> to mouse</span></button>
-      <div class="progress" id="progress"><i></i></div>
-    </div>
-  </div>
 </main>
 
 <section class="content" id="how">
@@ -639,6 +657,18 @@ sudo udevadm control --reload-rules</pre>
     </div>
   </div>
 </footer>
+
+<dialog class="modal" id="confirmDlg" aria-labelledby="confirmTitle">
+  <form method="dialog">
+    <div class="micon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></div>
+    <h3 id="confirmTitle">Restore factory defaults?</h3>
+    <p>Every button, DPI level, lighting and polling setting on this page goes back to the Meetion GW32 defaults. Your mouse doesn’t change until you press Apply.</p>
+    <div class="mrow">
+      <button class="btn ghost" value="cancel">Cancel</button>
+      <button class="btn primary" value="ok" autofocus>Restore defaults</button>
+    </div>
+  </form>
+</dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1038,7 +1068,8 @@ function renderSummary() {
 function renderAll() { renderButtons(); renderStage(); renderDpi(); renderLighting(); renderRates(); renderSummary(); }
 function changed() {
   save(); renderSummary(); dirty = true;
-  if (device) msg("Unsaved changes. Press Apply to save them.");
+  $("apply").classList.add("pending"); $("apply").title = "You have unsaved changes";
+  if ($("msg").className.includes("ok")) msg("");
 }
 function showTab(name) {
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === name));
@@ -1052,9 +1083,18 @@ $("activeMode").onchange = e => { cfg.activeMode = +e.target.value; changed(); }
 $("lightSpeed").oninput = e => { cfg.lighting.speed = +e.target.value; fill(e.target); $("lightSpeedOut").value = cfg.lighting.speed - 3; changed(); };
 $("lightBright").oninput = e => { cfg.lighting.brightness = +e.target.value; fill(e.target); $("lightBrightOut").value = cfg.lighting.brightness; changed(); };
 $("sleep").oninput = e => { cfg.lighting.sleep = +e.target.value; fill(e.target); $("sleepOut").value = cfg.lighting.sleep + "m"; changed(); };
-$("reset").onclick = () => {
-  if (!confirm("Reset every setting on this page to the Meetion GW32 factory defaults?")) return;
-  cfg = clone(DEFAULTS); changed(); renderAll(); toast("Factory defaults loaded — press Apply to write them.");
+function confirmModal() {
+  const dlg = $("confirmDlg");
+  return new Promise(res => {
+    dlg.returnValue = "";
+    dlg.addEventListener("close", () => res(dlg.returnValue === "ok"), { once: true });
+    dlg.showModal();
+  });
+}
+$("confirmDlg").addEventListener("click", e => { if (e.target === e.currentTarget) e.currentTarget.close("cancel"); });
+$("reset").onclick = async () => {
+  if (!(await confirmModal())) return;
+  cfg = clone(DEFAULTS); changed(); renderAll(); toast("Factory defaults loaded. Press Apply to save them to the mouse.");
 };
 $("export").onclick = () => {
   const a = el("a", { href: URL.createObjectURL(new Blob([JSON.stringify(cfg, null, 2)], { type: "application/json" })), download: "meetion-gw32-config.json" });
@@ -1118,13 +1158,6 @@ function renderLink() {
     $("battPct").textContent = `${link.charging ? "⚡" : ""}${link.battery}%`;
   }
   chip.title = d ? `${name} · ${sub}${fresh ? ` · battery ${link.battery}%` : ""}` : "Connect your GW32";
-  if (d && isReceiver(d)) {
-    const hint = "Receiver connected. Switch the mouse to 2.4G mode.";
-    const ready = "Mouse linked. Customize, then press Apply.";
-    const cur = $("msg").textContent;
-    if (linked() && cur === hint) msg(ready, "ok");
-    else if (!linked() && cur === ready) msg(hint, "ok");
-  }
 }
 setInterval(() => { if (device) renderLink(); }, 1000);
 
@@ -1136,9 +1169,7 @@ function setDevice(d) {
   renderLink();
   $("apply").disabled = !d;
   $("connectHero").textContent = d ? "Connected ✓  Customize below" : "Connect your GW32";
-  msg(!d ? "Connect the mouse with its USB-C cable or 2.4G receiver to begin."
-    : isReceiver(d) ? "Receiver connected. Switch the mouse to 2.4G mode."
-    : (dirty ? "Connected. Press Apply to save your changes." : "Connected. Customize, then press Apply."), d ? "ok" : "");
+  msg("");
 }
 async function openDevice(d) { if (!d.opened) await d.open(); setDevice(d); }
 
@@ -1191,7 +1222,7 @@ $("apply").onclick = async () => {
   try {
     if (!device.opened) await device.open();
     if (wireless && !linked()) {
-      msg("Looking for the mouse…");
+      msg("Looking for the mouse…", "ok");
       for (let i = 0; i < 25 && !linked(); i++) await sleep(100);
       if (!linked()) {
         msg("The receiver is connected, but the mouse isn’t linked to it. Switch the GW32 to 2.4G mode, move it to wake it, then press Apply again.", "err");
@@ -1215,11 +1246,12 @@ $("apply").onclick = async () => {
       await sleep(wireless ? 60 : 150);
     }
     dirty = false;
+    $("apply").classList.remove("pending"); $("apply").title = "";
     if (unconfirmed.length) {
       msg(`Saved, but the mouse didn’t confirm: ${unconfirmed.join(", ")}. Press Apply again to be sure.`, "err");
     } else {
-      msg("Saved to your mouse. It now works this way everywhere — even over Bluetooth.", "ok");
-      toast("✓ Settings saved to the mouse");
+      msg("");
+      toast("✓ Saved to your mouse. It now works this way in every mode.");
     }
   } catch (err) {
     msg("Write failed: " + err.message + (wireless ? "." : " — unplug and replug the cable, then try again."), "err");
