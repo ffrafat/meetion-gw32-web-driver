@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ffrafat.github.io/meetion-gw32-driver/sitemap.xml
+Sitemap: https://ffrafat.github.io/meetion-gw32-web-driver/sitemap.xml

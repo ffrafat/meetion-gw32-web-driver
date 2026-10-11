@@ -1,6 +1,6 @@
-# Meetion GW32 Driver for Mac, Windows & Linux
+# Meetion GW32 Web Driver for Mac, Windows & Linux
 
-**Live site: https://ffrafat.github.io/meetion-gw32-driver/**
+**Live site: https://ffrafat.github.io/meetion-gw32-web-driver/**
 
 A free, open-source driver and configurator for the **Meetion GW32 (MT-GW32)** tri-mode gaming mouse.
 Meetion only ships a Windows `.exe`. This version runs entirely in your browser over WebHID, so it works on
@@ -21,7 +21,7 @@ Meetion only ships a Windows `.exe`. This version runs entirely in your browser 
 ## How to use
 
 1. Connect the GW32 with its USB-C cable.
-2. Open https://ffrafat.github.io/meetion-gw32-driver/ in **Chrome, Edge, Brave or Opera**. Safari and Firefox don't support WebHID.
+2. Open https://ffrafat.github.io/meetion-gw32-web-driver/ in **Chrome, Edge, Brave or Opera**. Safari and Firefox don't support WebHID.
 3. Click **Connect**, change your settings, then click **Apply to mouse**.
 
 On **Linux**, let your user access the mouse once:
