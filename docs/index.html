@@ -64,7 +64,7 @@
         { "@type": "Question", "name": "Why does it not work in Safari or Firefox?",
           "acceptedAnswer": { "@type": "Answer", "text": "Safari and Firefox do not support WebHID, the browser technology used to talk to USB devices. Use Google Chrome, Microsoft Edge, Brave or Opera on a desktop computer." } },
         { "@type": "Question", "name": "How do I reset the Meetion GW32 to factory settings?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Click Reset to defaults and then Apply to mouse. This writes the original GW32 button layout, 1200/2400/3200/6400 DPI levels, Rainbow Wave lighting and 1000 Hz polling." } },
+          "acceptedAnswer": { "@type": "Answer", "text": "Click Reset, confirm, and then click Apply. This writes the original GW32 button layout, 1200/2400/3200/6400 DPI levels, Rainbow Wave lighting and 1000 Hz polling." } },
         { "@type": "Question", "name": "Is this the official Meetion software?",
           "acceptedAnswer": { "@type": "Answer", "text": "No. It is an independent, free community tool that speaks the same USB protocol as the official Windows driver. It is not affiliated with or endorsed by Meetion." } }
       ]
@@ -323,7 +323,6 @@
   @media (max-width: 1000px) {
     .dock .inner { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "chip tools apply" "msg msg msg"; }
     .dock .msg { padding: 0 6px 2px; }
-    .dock .long { display: none; }
     .btn.tool { padding: 9px 10px; }
   }
   @media (max-width: 560px) {
@@ -459,7 +458,7 @@
       <button class="btn ghost tool" id="reset" type="button" title="Load GW32 factory defaults"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span>Reset</span></button>
       <input type="file" id="importFile" accept="application/json" hidden>
     </div>
-    <button class="btn primary" id="apply" disabled>Apply<span class="long"> to mouse</span></button>
+    <button class="btn primary" id="apply" disabled title="Save these settings to the mouse">Apply</button>
     <div class="progress" id="progress"><i></i></div>
   </div>
 </div>
@@ -609,11 +608,11 @@ sudo udevadm control --reload-rules</pre>
     <details><summary>Why can’t the page read my current settings?</summary>
       <p>The GW32 firmware only accepts settings; it can’t report them back (the official Windows driver works the same way). This page remembers what you last applied in your browser, and Export lets you keep a copy.</p></details>
     <details><summary>How do I reset the Meetion GW32 to factory settings?</summary>
-      <p>Click Reset, then Apply to mouse. This writes the original layout (left, right, middle, DPI cycle, forward, back, mute, volume −, volume +), DPI 1200/2400/3200/6400, Rainbow Wave lighting and 1000 Hz polling.</p></details>
+      <p>Click Reset, confirm, then click Apply. This writes the original layout (left, right, middle, DPI cycle, forward, back, mute, volume −, volume +), DPI 1200/2400/3200/6400, Rainbow Wave lighting and 1000 Hz polling.</p></details>
     <details><summary>Which mice are supported?</summary>
       <p>The Meetion GW32 (MT-GW32) tri-mode wireless gaming mouse over its USB-C cable (USB ID 1d57:fa61) or its 2.4G receiver (1d57:fa60). Other Meetion models use different layouts and aren’t supported yet.</p></details>
     <details><summary>Is this the official Meetion software?</summary>
-      <p>No. It’s an independent, free, <a href="https://github.com/ffrafat/meetion-gw32-web-driver" target="_blank" rel="noopener">open-source</a> community tool created by Faisal F Rafat that speaks the same USB protocol as the official Windows driver. It isn’t affiliated with or endorsed by Meetion. Use at your own risk; you can always restore defaults with Reset → Apply.</p></details>
+      <p>No. It’s an independent, free, <a href="https://github.com/ffrafat/meetion-gw32-web-driver" target="_blank" rel="noopener">open-source</a> community tool created by Faisal F Rafat that speaks the same USB protocol as the official Windows driver. It isn’t affiliated with or endorsed by Meetion. Use at your own risk; you can always restore defaults with Reset, then Apply.</p></details>
   </div>
 </section>
 

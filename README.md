@@ -24,7 +24,7 @@ Meetion only ships a Windows `.exe`. This version runs entirely in your browser 
 
 1. Connect the GW32 with its USB-C cable, or plug in the 2.4G receiver and switch the mouse to 2.4G mode.
 2. Open https://ffrafat.github.io/meetion-gw32-web-driver/ in **Chrome, Edge, Brave or Opera**. Safari and Firefox don't support WebHID.
-3. Click **Connect**, change your settings, then click **Apply to mouse**.
+3. Click **Connect**, change your settings, then click **Apply**.
 
 On **Linux**, let your user access the mouse once:
 
