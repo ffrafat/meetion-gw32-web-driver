@@ -56,7 +56,7 @@
         { "@type": "Question", "name": "Is there a Meetion GW32 driver for Mac?",
           "acceptedAnswer": { "@type": "Answer", "text": "Meetion only ships a Windows .exe. This free web configurator works on macOS (Intel and Apple Silicon) in Chrome, Edge, Brave or Opera: connect the GW32 with its USB-C cable or 2.4G receiver, click Connect, change settings and press Apply." } },
         { "@type": "Question", "name": "Do I need to install anything?",
-          "acceptedAnswer": { "@type": "Answer", "text": "No. The configurator runs entirely in the browser using WebHID. Nothing is downloaded or installed and no data leaves your computer." } },
+          "acceptedAnswer": { "@type": "Answer", "text": "No. The configurator runs entirely in the browser using WebHID. Nothing is downloaded or installed, and your mouse settings never leave your computer. Visits are counted anonymously with GoatCounter, without cookies or personal data." } },
         { "@type": "Question", "name": "Can I configure the GW32 over the 2.4G receiver or Bluetooth?",
           "acceptedAnswer": { "@type": "Answer", "text": "Yes. You can configure the GW32 over the USB-C cable or the 2.4G receiver. Settings are saved in the mouse's own memory, so they keep working in every mode, including Bluetooth, and on every computer you use. Configuring directly over Bluetooth isn't supported yet." } },
         { "@type": "Question", "name": "Does the Meetion GW32 software work on Linux and Chromebook?",
@@ -416,6 +416,12 @@
   .person b { display: block; font-size: 15px; }
   .person small { color: var(--muted); font-size: 12.5px; }
   .fcreator p { margin-top: 14px; }
+  .fstats { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 40px 0 0; color: var(--muted); font-size: 13.5px; }
+  .fstats[hidden] { display: none; }
+  .fstats b { color: var(--text); font-variant-numeric: tabular-nums; }
+  .fstats svg { color: var(--accent); }
+  .fstats-note { color: var(--faint); font-size: 12.5px; }
+  .fstats-note::before { content: "·"; margin-right: 8px; }
   .fbottom { display: flex; justify-content: space-between; gap: 12px 32px; flex-wrap: wrap; margin-top: 44px; padding-top: 22px;
              border-top: 1px solid var(--line); color: var(--faint); font-size: 12.5px; }
   .fbottom span:last-child { max-width: 560px; }
@@ -646,7 +652,7 @@ sudo udevadm control --reload-rules</pre>
     <details open><summary>Is there a Meetion GW32 driver for Mac?</summary>
       <p>Meetion only provides a Windows .exe. This free web configurator works on macOS (Intel and Apple Silicon) in Chrome, Edge, Brave or Opera: connect the GW32 with its USB-C cable or 2.4G receiver, click Connect, change your settings and press Apply.</p></details>
     <details><summary>Do I need to install anything?</summary>
-      <p>No. It runs entirely in your browser using WebHID. Nothing is downloaded or installed and no data leaves your computer — the page has no server, analytics or tracking.</p></details>
+      <p>No. It runs entirely in your browser using WebHID. Nothing is downloaded or installed, and your mouse settings never leave your computer. The page counts visits anonymously with <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a> — no cookies, no personal data.</p></details>
     <details><summary>Can I configure the GW32 over the 2.4G receiver or Bluetooth?</summary>
       <p>You can configure the GW32 over the USB-C cable or the 2.4G receiver (switch the mouse to 2.4G mode first — the page checks that the mouse is linked and waits for it to confirm every change). Settings are saved in the mouse’s own memory, so they keep working in every mode, including Bluetooth, and on every computer you use. Configuring directly over Bluetooth isn’t supported yet.</p></details>
     <details><summary>Does it work on Linux and Chromebook?</summary>
@@ -698,6 +704,11 @@ sudo udevadm control --reload-rules</pre>
         <p>Reverse-engineered the GW32 protocol and built this tool so every GW32 owner can customize their mouse, on any computer.</p>
       </div>
     </div>
+    <p class="fstats" id="siteStats" hidden>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+      <span id="statText"></span>
+      <span class="fstats-note">Counted anonymously with GoatCounter · no cookies</span>
+    </p>
     <div class="fbottom">
       <span>© 2026 Faisal F Rafat. Made for the GW32 community.</span>
       <span>Meetion and GW32 are trademarks of their respective owner. Not affiliated with or endorsed by Meetion. Product images © Meetion.</span>
@@ -944,6 +955,8 @@ try { const s = localStorage.getItem(STORE); if (s) cfg = Object.assign(clone(DE
 const save = () => { try { localStorage.setItem(STORE, JSON.stringify(cfg)); } catch {} };
 let editMode = 1, selected = null, device = null, dirty = false;
 const evlog = [];
+// Anonymous usage events for the public counter (GoatCounter, no cookies). No-op if the script is blocked.
+const track = (path, title) => { try { window.goatcounter && window.goatcounter.count && window.goatcounter.count({ path, title, event: true }); } catch {} };
 function logLine(text) {
   const t = new Date().toLocaleTimeString([], { hour12: false });
   evlog.push(`${t}  ${text}`);
@@ -1262,6 +1275,7 @@ async function connect() {
     if (!d) return msg("That entry doesn’t accept settings — choose the other “MEETION” entry.", "err");
     await openDevice(d);
     toast(isReceiver(d) ? "2.4G receiver connected" : "Meetion GW32 connected");
+    track(isReceiver(d) ? "connect-receiver" : "connect-cable", "Mouse connected");
     document.getElementById("configure").scrollIntoView({ behavior: "smooth" });
   } catch (err) { msg(err.message, "err"); }
 }
@@ -1294,6 +1308,7 @@ async function switchLayout(n) {
     else await sendPacket(p);
     cfg.activeMode = n; save(); renderLayout(); renderSummary();
     msg(""); toast(`Layout ${n} is now active`);
+    track("switch-layout", "Layout switched");
   } catch (err) {
     msg(`Couldn’t switch layout: ${err.message}.`, "err");
   } finally { busy = false; sw.classList.remove("busy"); }
@@ -1366,6 +1381,7 @@ $("apply").onclick = async () => {
     } else {
       msg("");
       toast("✓ Settings saved to your mouse.");
+      track("apply", "Settings applied");
     }
   } catch (err) {
     msg("Write failed: " + err.message + (wireless ? "." : " — unplug and replug the cable, then try again."), "err");
@@ -1415,8 +1431,27 @@ function init() {
   }
   layoutStage();
   renderAll();
+  loadStats();
+}
+// Public counts from GoatCounter's visitor-counter endpoint; hidden if unavailable.
+async function loadStats() {
+  const get = async path => {
+    try {
+      const r = await fetch(`https://gw32.goatcounter.com/counter/${encodeURIComponent(path)}.json`);
+      if (!r.ok) return null;
+      const j = await r.json();
+      return j && j.count ? j.count : null;
+    } catch { return null; }
+  };
+  const [visits, applies] = await Promise.all([get("/meetion-gw32-web-driver/"), get("apply")]);
+  if (!visits) return;
+  const out = $("statText"); out.textContent = "";
+  out.append(el("b", { textContent: String(visits) }), " visits");
+  if (applies) out.append(" · ", el("b", { textContent: String(applies) }), " times settings applied");
+  $("siteStats").hidden = false;
 }
 init();
 </script>
+<script data-goatcounter="https://gw32.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </body>
 </html>
