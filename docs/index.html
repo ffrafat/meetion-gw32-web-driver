@@ -196,7 +196,7 @@
                 padding: 6px 14px; border-radius: 8px; cursor: pointer; }
   .seg button.on { background: var(--raise); color: var(--text); box-shadow: 0 2px 10px rgba(0, 0, 0, .18); }
   .stage { position: relative; width: 100%; margin-top: 6px; }
-  .stage img { position: absolute; filter: drop-shadow(var(--img-shadow)); user-select: none; -webkit-user-drag: none; }
+  .stage img { position: absolute; filter: drop-shadow(var(--img-shadow)); user-select: none; -webkit-user-drag: none; transform-origin: 50% 50%; }
   .stage .glow { position: absolute; border-radius: 50%; background: radial-gradient(circle, var(--glow), transparent 65%); filter: blur(10px); }
   .stage svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
   .lead-line { fill: none; stroke: var(--leader); stroke-width: 1.4; transition: stroke .15s; }
@@ -511,7 +511,7 @@
       <div class="stage-head">
         <div>
           <h2 id="stageTitle">Meetion GW32 button layout</h2>
-          <div class="sub">Click a button on the mouse to remap it</div>
+          <div class="sub" id="stageSub">Editing Layout 1 · click a button to remap it</div>
         </div>
         <div style="flex:1"></div>
         <div class="seg" role="tablist" aria-label="Layout to edit" id="modeSeg" title="Choose which layout to edit. The dot marks the layout active on the mouse.">
@@ -831,7 +831,24 @@ const BUTTONS = [
 ];
 const IMG = { w: 783, h: 1200 };
 const IMG_BOX = { x: 216, y: 11, w: 508, h: 778 };
-const toBox = (x, y) => [IMG_BOX.x + x * IMG_BOX.w / IMG.w, IMG_BOX.y + y * IMG_BOX.h / IMG.h];
+const LAYOUT_TILT = { 1: 0, 2: 6 };          // degrees; Layout 2 is shown slightly rotated
+let stageAngle = 0;
+const toBox = (x, y) => {
+  const cx = IMG_BOX.x + IMG_BOX.w / 2, cy = IMG_BOX.y + IMG_BOX.h / 2;
+  const bx = IMG_BOX.x + x * IMG_BOX.w / IMG.w - cx, by = IMG_BOX.y + y * IMG_BOX.h / IMG.h - cy;
+  const a = stageAngle * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
+  return [cx + bx * c - by * s, cy + bx * s + by * c];
+};
+let tiltAnim = 0;
+function tiltStage(animate = true) {
+  const target = LAYOUT_TILT[editMode] || 0, from = stageAngle;
+  cancelAnimationFrame(tiltAnim);
+  const set = a => { stageAngle = a; $("mouseImg").style.transform = a ? `rotate(${a}deg)` : ""; renderStage(); };
+  if (!animate || from === target || matchMedia("(prefers-reduced-motion: reduce)").matches) return set(target);
+  const t0 = performance.now(), dur = 380, ease = t => 1 - Math.pow(1 - t, 3);
+  const step = now => { const t = Math.min(1, (now - t0) / dur); set(from + (target - from) * ease(t)); if (t < 1) tiltAnim = requestAnimationFrame(step); };
+  tiltAnim = requestAnimationFrame(step);
+}
 const HIDDEN_SLOTS = { 16: "scroll_up", 17: "scroll_down" };
 
 const LIGHT_MODES = ["LED off", "Static", "Breathing", "Neon", "Color breathing", "Color static", "Mixed breathing",
@@ -1122,7 +1139,12 @@ function showTab(name) {
 
 // ---------- events ----------
 document.querySelector(".tabs").onclick = e => { if (e.target.dataset.tab) showTab(e.target.dataset.tab); };
-$("modeSeg").onclick = e => { if (e.target.dataset.mode) { editMode = +e.target.dataset.mode; renderButtons(); renderStage(); } };
+$("modeSeg").onclick = e => {
+  if (!e.target.dataset.mode || +e.target.dataset.mode === editMode) return;
+  editMode = +e.target.dataset.mode;
+  $("stageSub").textContent = `Editing Layout ${editMode} · click a button to remap it`;
+  renderButtons(); tiltStage();
+};
 $("lightSpeed").oninput = e => { cfg.lighting.speed = +e.target.value; fill(e.target); $("lightSpeedOut").value = cfg.lighting.speed - 3; changed(); };
 $("lightBright").oninput = e => { cfg.lighting.brightness = +e.target.value; fill(e.target); $("lightBrightOut").value = cfg.lighting.brightness; changed(); };
 $("sleep").oninput = e => { cfg.lighting.sleep = +e.target.value; fill(e.target); $("sleepOut").value = cfg.lighting.sleep + "m"; changed(); };
