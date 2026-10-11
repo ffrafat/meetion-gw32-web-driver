@@ -10,7 +10,7 @@ Meetion only ships a Windows `.exe`. This version runs entirely in your browser 
 
 ## Features
 
-- Remap all 9 buttons, including the side buttons and the thumb wheel, in two button modes
+- Remap all 9 buttons, including the side buttons and the thumb wheel, in two button layouts, with an instant layout switch
 - Mouse actions, DPI controls, media keys, browser keys, ready-made shortcuts, or any recorded key combination
 - 4 DPI levels (400–8000) with indicator colors
 - 12 RGB lighting effects with speed, brightness, color and a sleep timer
@@ -54,17 +54,17 @@ mouse doesn't report its settings back, so the full configuration is written eve
 
 | Report | Purpose | Layout |
 |---|---|---|
-| `0x0C` | session start/end | `0c 0a P ~P 02 fd` (P = active mode 1/2) |
-| `0x04` | DPI (per mode) | 8 levels: enable mask, >4000 mask, value/39, value/38, current level, RGB per level, checksum |
-| `0x05` | lighting (per mode) | effect<<4, sleep/speed nibbles, brightness, RGB, checksum |
+| `0x0C` | set active layout | `0c 0a P ~P 02 fd` (P = layout 1/2). Sent alone to switch layouts instantly, and before/after every write to keep the current layout |
+| `0x04` | DPI (per layout) | 8 levels: enable mask, >4000 mask, value/39, value/38, current level, RGB per level, checksum |
+| `0x05` | lighting (per layout) | effect<<4, sleep/speed nibbles, brightness, RGB, checksum |
 | `0x06` | polling rate | `06 09 i v ~v`, v = 8/4/2/1 for 125/250/500/1000 Hz |
-| `0x08` | buttons (per mode) | 18 slots × 3 bytes, then a 16-bit sum of bytes 3..56, big-endian |
+| `0x08` | buttons (per layout) | 18 slots × 3 bytes, then a 16-bit sum of bytes 3..56, big-endian |
 
 Checksums are plain 16-bit sums starting at byte 3.
 
 The mouse reports status through input report `0x03`: `code = b1 | b2<<8`, `value = b3 | b4<<8`.
 `0x4010` is a heartbeat sent every 2 s while the mouse is linked (value high byte = battery 1–10, low byte 0 = charging),
-`0x5010` acknowledges a write (value 0 = OK), and `0x1000` reports a DPI level change. Over the receiver, every
+`0x5010` acknowledges a write (value 0 = OK), `0x1000` reports a DPI level change, and `0x8000` reports a layout change (0-based). Over the receiver, every
 settings packet is resent up to 10 times until it is acknowledged.
 
 ## Credits
